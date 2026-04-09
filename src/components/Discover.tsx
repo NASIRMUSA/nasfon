@@ -25,7 +25,7 @@ export default function Discover({ productsList, setCurrentTab, setViewingProduc
       </button>
 
       <div className="bg-white rounded-[2.5rem] overflow-hidden aspect-[4/3] mb-16 shadow-lg shadow-black/5">
-         <img src="/headphones_1775640971368.png" className="w-full h-full object-cover" alt="Headphones" />
+         <img src="/headphones_1775640971368.png" className="w-full h-full object-cover" alt="Premium wireless noise-canceling headphones featured collection" />
       </div>
 
       <div className="mb-6 flex justify-between items-end">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Minus, Plus } from 'lucide-react';
 import { usePaystackPayment } from 'react-paystack';
 import type { Product } from '../types';
@@ -78,6 +79,33 @@ export default function ProductDetails({ product, onClose, onSuccessReturn }: Pr
 
   return (
     <div className="min-h-screen max-w-md mx-auto bg-white flex flex-col relative shadow-2xl">
+      <Helmet>
+        <title>{product.name} | Nasfon Premium Shop</title>
+        <meta name="description" content={`Buy ${product.name} at Nasfon. ${product.description.substring(0, 150)}...`} />
+        <meta property="og:title" content={`${product.name} | Nasfon`} />
+        <meta property="og:description" content={product.description.substring(0, 160)} />
+        <meta property="og:image" content={product.image} />
+        <meta name="twitter:title" content={`${product.name} | Nasfon`} />
+        <meta name="twitter:image" content={product.image} />
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": "${product.name}",
+              "image": "${product.image}",
+              "description": "${product.description.replace(/"/g, '\\"')}",
+              "offers": {
+                "@type": "Offer",
+                "price": "${parseInt(String(product.price).replace(/,/g, ''), 10)}",
+                "priceCurrency": "NGN",
+                "availability": "https://schema.org/InStock",
+                "url": "https://nasfon.netlify.app"
+              }
+            }
+          `}
+        </script>
+      </Helmet>
       <header className="flex items-center justify-between px-6 py-5 sticky top-0 bg-[#f7f7f9]/80 backdrop-blur-md z-10">
         <button onClick={onClose} className="p-2 -ml-2 rounded-full hover:bg-gray-200 transition-colors">
           <ArrowLeft size={24} className="text-gray-800" />

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Menu, Globe, Settings } from 'lucide-react';
 import { supabase } from './supabase';
 import type{ Product } from './types';
@@ -146,6 +147,26 @@ function App() {
 
   return (
     <div className="min-h-screen max-w-md mx-auto bg-[#f7f7f9] text-gray-800 shadow-2xl relative">
+      <Helmet>
+        <title>Nasfon | Premium Tech & Electronics Catalog</title>
+        <meta name="description" content="Browse our exclusive catalog of premium headphones, sleek tech accessories, and high-end electronics. Quality you can trust, delivered to you." />
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "Store",
+              "name": "Nasfon",
+              "description": "Premium Tech Accessories and Electronics in Nigeria",
+              "image": "https://res.cloudinary.com/dxja7dt9a/image/upload/v1775732736/nasfon-logo-transparent_oyeozo.png",
+              "url": "https://nasfon.netlify.app",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "NG"
+              }
+            }
+          `}
+        </script>
+      </Helmet>
       {renderHeader()}
       
       {currentTab !== 'admin' && (
