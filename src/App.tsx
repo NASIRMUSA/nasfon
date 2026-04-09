@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, Globe, Settings } from 'lucide-react';
 import { supabase } from './supabase';
 import type{ Product } from './types';

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Minus, Plus } from 'lucide-react';
 import { usePaystackPayment } from 'react-paystack';
 import type { Product } from '../types';
-import nasfonLogo from '../../public/assets/nasfon-logo-transparent.png';
 
 interface ProductDetailsProps {
   product: Product;
