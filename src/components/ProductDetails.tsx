@@ -8,10 +8,11 @@ interface ProductDetailsProps {
   product: Product;
   onClose: () => void;
   onSuccessReturn: () => void;
+  initialShowOrderModal?: boolean;
 }
 
-export default function ProductDetails({ product, onClose, onSuccessReturn }: ProductDetailsProps) {
-  const [showOrderModal, setShowOrderModal] = useState(false);
+export default function ProductDetails({ product, onClose, onSuccessReturn, initialShowOrderModal = false }: ProductDetailsProps) {
+  const [showOrderModal, setShowOrderModal] = useState(initialShowOrderModal);
   const [isSuccess, setIsSuccess] = useState(false);
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');

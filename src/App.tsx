@@ -32,6 +32,7 @@ function App() {
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDirectBuy, setIsDirectBuy] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -134,11 +135,13 @@ function App() {
       <>
         <ProductDetails 
           product={viewingProduct} 
-          onClose={() => setViewingProduct(null)} 
+          onClose={() => { setViewingProduct(null); setIsDirectBuy(false); }} 
           onSuccessReturn={() => {
              setViewingProduct(null);
+             setIsDirectBuy(false);
              setCurrentTab('products');
           }}
+          initialShowOrderModal={isDirectBuy}
         />
         <WhatsAppButton />
       </>
@@ -192,7 +195,8 @@ function App() {
         {currentTab === 'products' && (
            <ProductList
              productsList={productsList}
-             setViewingProduct={setViewingProduct}
+             onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
+             onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
              isLoading={isLoading}
            />
         )}
@@ -201,7 +205,8 @@ function App() {
            <Discover 
              productsList={productsList}
              setCurrentTab={setCurrentTab}
-             setViewingProduct={setViewingProduct}
+             onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
+             onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
            />
         )}
       </main>

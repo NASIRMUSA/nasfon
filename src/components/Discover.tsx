@@ -4,10 +4,11 @@ import type { Product } from '../types';
 interface DiscoverProps {
   productsList: Product[];
   setCurrentTab: (tab: string) => void;
-  setViewingProduct: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
+  onBuyProduct: (product: Product) => void;
 }
 
-export default function Discover({ productsList, setCurrentTab, setViewingProduct }: DiscoverProps) {
+export default function Discover({ productsList, setCurrentTab, onViewProduct, onBuyProduct }: DiscoverProps) {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h1 className="font-display text-5xl font-bold mt-2 mb-6 leading-[1.1] tracking-tight">
@@ -25,7 +26,7 @@ export default function Discover({ productsList, setCurrentTab, setViewingProduc
       </button>
 
       <div className="bg-white rounded-[2.5rem] overflow-hidden aspect-[4/3] mb-16 shadow-lg shadow-black/5">
-         <img src="/headphones_1775640971368.png" className="w-full h-full object-cover" alt="Premium wireless noise-canceling headphones featured collection" />
+         <img src="https://res.cloudinary.com/dxja7dt9a/image/upload/v1775664699/1775488312718_x5jfve.png" className="w-full h-full object-cover" alt="Premium wireless noise-canceling headphones featured collection" />
       </div>
 
       <div className="mb-6 flex justify-between items-end">
@@ -41,27 +42,64 @@ export default function Discover({ productsList, setCurrentTab, setViewingProduc
         </button>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-8 -mx-6 px-6 no-scrollbar snap-x">
-        {productsList.slice(0, 3).map(item => (
-          <div key={item.id} className="min-w-[280px] bg-white rounded-[2rem] p-4 shadow-sm snap-start shrink-0 cursor-pointer" onClick={() => setViewingProduct(item)}>
-            <div className="bg-gray-50 rounded-[1.5rem] aspect-square overflow-hidden mb-4 relative p-4 flex items-center justify-center">
-               <img src={item.image} alt={item.name} className="w-4/5 h-4/5 object-contain mix-blend-multiply" />
-            </div>
-            <div className="px-2">
-              <div className="flex justify-between items-center mb-1">
-                <h3 className="font-bold text-lg truncate">{item.name}</h3>
-                <span className="text-xs bg-gray-100 px-2 py-1 rounded font-bold shrink-0 ml-2">₦{item.price.replace('000', 'k')}</span>
+      <div className="space-y-6 pb-10">
+        {productsList.slice(0, 3).map((item) => (
+          <div
+            key={item.id}
+            onClick={() => onViewProduct(item)}
+            className="w-full bg-white rounded-[2.5rem] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.03)] border border-gray-100/50 hover:shadow-xl hover:shadow-black/5 transition-all duration-300 cursor-pointer group"
+          >
+            {/* Image */}
+            <div className="bg-[#f8f9fb] rounded-[2rem] aspect-[16/10] overflow-hidden mb-5 relative p-6 flex items-center justify-center">
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                <span className="text-[10px] font-bold text-gray-900 tracking-tight">FEATURED</span>
               </div>
-              <p className="text-sm text-gray-500 line-clamp-2">
-                 {item.description.split('\n')[0]}
+            </div>
+    
+            {/* Content */}
+            <div className="flex flex-col px-1">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-display font-bold text-xl tracking-tight text-gray-900 group-hover:text-[#003b8e] transition-colors leading-tight truncate pr-4">
+                  {item.name}
+                </h3>
+                <span className="text-lg font-bold text-[#003b8e] shrink-0">₦{item.price}</span>
+              </div>
+    
+              <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed mb-5">
+                {item.description}
               </p>
-              <button className="mt-4 w-full border border-gray-200 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors">
-                View Product
+    
+              {/* Footer / Buy Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBuyProduct(item);
+                }}
+                className="w-full bg-[#003b8e] text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-[#003b8e]/20 hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              >
+                Buy Now
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18" height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
               </button>
             </div>
           </div>
         ))}
-        <div className="w-2 shrink-0"></div>
       </div>
 
       <div className="space-y-4 mt-8">

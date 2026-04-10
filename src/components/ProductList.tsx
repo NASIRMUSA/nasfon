@@ -3,11 +3,12 @@ import type { Product } from '../types';
 
 interface ProductListProps {
   productsList: Product[];
-  setViewingProduct: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
+  onBuyProduct: (product: Product) => void;
   isLoading?: boolean;
 }
 
-export default function ProductList({ productsList, setViewingProduct, isLoading }: ProductListProps) {
+export default function ProductList({ productsList, onViewProduct, onBuyProduct, isLoading }: ProductListProps) {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h1 className="font-display text-4xl font-bold mt-2 mb-4 tracking-tight">Products</h1>
@@ -34,7 +35,7 @@ export default function ProductList({ productsList, setViewingProduct, isLoading
           {productsList.map(product => (
             <div key={product.id} className="group flex flex-col">
               <div className="relative bg-white rounded-2xl aspect-square overflow-hidden mb-3 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] cursor-pointer"
-                   onClick={() => setViewingProduct(product)}>
+                   onClick={() => onViewProduct(product)}>
                 <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 {product.badge && (
                   <div className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide z-10
@@ -55,10 +56,10 @@ export default function ProductList({ productsList, setViewingProduct, isLoading
                     ₦ {product.price}
                   </span>
                   <button 
-                    onClick={() => setViewingProduct(product)}
+                    onClick={() => onBuyProduct(product)}
                     className="w-full bg-[#003b8e]/5 text-[#003b8e] border border-[#003b8e]/10 py-2 rounded-xl text-xs font-bold hover:bg-[#003b8e] hover:text-white transition-colors"
                   >
-                    View Details
+                    Buy Now
                   </button>
                 </div>
               </div>
