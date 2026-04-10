@@ -127,6 +127,15 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
           <p className="text-xs text-gray-500">Dedicated human support available 24/7 for you.</p>
         </div>
       </div>
+      <div className="mt-16 bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100/50">
+        <h2 className="font-display font-bold text-2xl mb-4">About Nasfon</h2>
+        <p className="text-sm text-gray-500 leading-relaxed mb-6">
+          Nasfon is Nigeria's premier destination for high-end tech accessories and curated electronics. We specialize in providing the modern professional with premium headphones, sleek mobile accessories, and cutting-edge gadgets that combine performance with luxury. 
+        </p>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Our commitment to quality ensures that every product in our catalog is verified for authenticity and performance. With fast, reliable delivery across Lagos and all of Nigeria, Nasfon is your trusted boutique for elevating your tech lifestyle.
+        </p>
+      </div>
     </div>
   );
 }

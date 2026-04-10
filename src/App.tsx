@@ -151,20 +151,28 @@ function App() {
   return (
     <div className="min-h-screen max-w-md mx-auto bg-[#f7f7f9] text-gray-800 shadow-2xl relative">
       <Helmet>
-        <title>Nasfon | Premium Tech & Electronics Catalog</title>
-        <meta name="description" content="Browse our exclusive catalog of premium headphones, sleek tech accessories, and high-end electronics. Quality you can trust, delivered to you." />
+        <title>Nasfon — Premium Tech Accessories & Electronics in Nigeria</title>
+        <meta name="description" content="Shop the best collection of premium tech accessories, high-end headphones, and luxury electronics at Nasfon. Verified quality, fast delivery across Nigeria, and secure payments via Paystack." />
+        <meta name="keywords" content="Nasfon, premium tech accessories, headphones Nigeria, luxury gadgets Lagos, tech store Nigeria, high-end electronics" />
         <script type="application/ld+json">
           {`
             {
               "@context": "https://schema.org",
-              "@type": "Store",
+              "@type": "OnlineStore",
               "name": "Nasfon",
-              "description": "Premium Tech Accessories and Electronics in Nigeria",
+              "description": "Premium Tech Accessories and Electronics Boutique in Nigeria",
               "image": "https://res.cloudinary.com/dxja7dt9a/image/upload/v1775732736/nasfon-logo-transparent_oyeozo.png",
               "url": "https://nasfon.netlify.app",
+              "priceRange": "₦₦",
               "address": {
                 "@type": "PostalAddress",
+                "addressLocality": "Lagos",
                 "addressCountry": "NG"
+              },
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://nasfon.netlify.app/?q={search_term_string}",
+                "query-input": "required name=search_term_string"
               }
             }
           `}
