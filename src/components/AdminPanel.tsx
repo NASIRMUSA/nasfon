@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ProtectedImage from './ProtectedImage';
 import { Settings, Plus, Edit2, Trash2, X, GripVertical } from 'lucide-react';
 import { supabase } from '../supabase';
 import type { Product, PromoSettings } from '../types';
@@ -378,7 +379,7 @@ export default function AdminPanel({
               <GripVertical size={20} />
             </div>
             <div className="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden shrink-0 pointer-events-none">
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <ProtectedImage src={product.image} alt={product.name} className="w-full h-full object-cover" wrapperClassName="w-full h-full" />
             </div>
             <div className="flex-1 min-w-0 pointer-events-none">
               <h3 className="font-bold text-gray-900 truncate">{product.name}</h3>

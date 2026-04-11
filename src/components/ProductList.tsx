@@ -1,4 +1,5 @@
 import { ShieldCheck, Tag } from 'lucide-react';
+import ProtectedImage from './ProtectedImage';
 import type { Product, PromoSettings } from '../types';
 
 interface ProductListProps {
@@ -54,7 +55,12 @@ export default function ProductList({ productsList, onViewProduct, onBuyProduct,
             <div key={product.id} className="group flex flex-col">
               <div className="relative bg-white rounded-2xl aspect-square overflow-hidden mb-3 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] cursor-pointer"
                    onClick={() => onViewProduct(product)}>
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <ProtectedImage 
+                  src={product.image} 
+                  alt={product.name} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                  wrapperClassName="w-full h-full"
+                />
                 {product.badge && (
                   <div className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide z-10
                     ${product.badge === 'SOLD OUT' ? 'bg-black text-white' : 'bg-white/90 backdrop-blur text-gray-900'}

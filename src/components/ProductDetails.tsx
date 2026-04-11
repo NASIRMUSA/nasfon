@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ProtectedImage from './ProtectedImage';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Minus, Plus } from 'lucide-react';
 import { usePaystackPayment } from 'react-paystack';
@@ -137,7 +138,12 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
       <main className="flex-1 overflow-y-auto w-full pb-24">
         <div className="p-4">
           <div className="bg-gray-100 rounded-[2.5rem] overflow-hidden mb-6 relative aspect-[4/5] w-full group">
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <ProtectedImage 
+              src={product.image} 
+              alt={product.name} 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+              wrapperClassName="w-full h-full"
+            />
             <div className="absolute top-4 left-4 flex flex-col gap-2">
               {product.badge && (
                 <div className={`px-3 py-1 rounded-full text-xs font-semibold z-10 w-fit

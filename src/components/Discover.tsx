@@ -1,4 +1,5 @@
 import { ShieldCheck, Truck, HeadphonesIcon, Tag } from 'lucide-react';
+import ProtectedImage from './ProtectedImage';
 import type { Product, PromoSettings } from '../types';
 
 interface DiscoverProps {
@@ -58,7 +59,12 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
       </button>
 
       <div className="bg-white rounded-[2.5rem] overflow-hidden aspect-[4/3] mb-16 shadow-lg shadow-black/5">
-         <img src="https://res.cloudinary.com/dxja7dt9a/image/upload/v1775664699/1775488312718_x5jfve.png" className="w-full h-full object-cover" alt="Premium wireless noise-canceling headphones featured collection" />
+         <ProtectedImage 
+           src="https://res.cloudinary.com/dxja7dt9a/image/upload/v1775664699/1775488312718_x5jfve.png" 
+           className="w-full h-full object-cover" 
+           alt="Premium wireless noise-canceling headphones featured collection" 
+           wrapperClassName="w-full h-full"
+         />
       </div>
 
       <div className="mb-6 flex justify-between items-end">
@@ -83,10 +89,11 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
           >
             {/* Image */}
             <div className="bg-[#f8f9fb] rounded-[2rem] aspect-[16/10] overflow-hidden mb-5 relative p-6 flex items-center justify-center">
-              <img
+              <ProtectedImage
                 src={item.image}
                 alt={item.name}
                 className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
+                wrapperClassName="w-full h-full"
               />
               <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
                 <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
