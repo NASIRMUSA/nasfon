@@ -177,7 +177,7 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
           Nasfon is Nigeria's premier destination for high-end tech accessories and curated electronics. We specialize in providing the modern professional with premium headphones, sleek mobile accessories, and cutting-edge gadgets that combine performance with luxury. 
         </p>
         <p className="text-sm text-gray-500 leading-relaxed">
-          Our commitment to quality ensures that every product in our catalog is verified for authenticity and performance. With fast, reliable delivery across Lagos and all of Nigeria, Nasfon is your trusted boutique for elevating your tech lifestyle.
+          Our commitment to quality ensures that every product in our catalog is verified for authenticity and performance. With fast, reliable delivery across Taraba State and all over Nigeria, Nasfon is your trusted boutique for elevating your tech lifestyle.
         </p>
       </div>
     </div>
