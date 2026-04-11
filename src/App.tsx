@@ -36,6 +36,32 @@ function App() {
   const [promoSettings, setPromoSettings] = useState<PromoSettings | null>(null);
 
   useEffect(() => {
+    const handleCopy = (e: ClipboardEvent) => {
+      // Prevent copying for everything except inputs/textareas
+      const target = e.target as HTMLElement;
+      if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      // Prevent right-click context menu (often used to copy text or save images)
+      // but allow it for inputs so users can still paste if needed
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+      e.preventDefault();
+    };
+
+    window.addEventListener('copy', handleCopy);
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      window.removeEventListener('copy', handleCopy);
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, []);
+
+  useEffect(() => {
     fetchProducts();
     fetchPromoSettings();
     
