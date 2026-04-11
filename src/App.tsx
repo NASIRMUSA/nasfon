@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Menu, Globe, Settings } from 'lucide-react';
 import { supabase } from './supabase';
-import type{ Product } from './types';
+import type { Product, PromoSettings } from './types';
 import Discover from './components/Discover';
 import ProductList from './components/ProductList';
 import ProductDetails from './components/ProductDetails';
@@ -33,9 +33,11 @@ function App() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDirectBuy, setIsDirectBuy] = useState(false);
+  const [promoSettings, setPromoSettings] = useState<PromoSettings | null>(null);
 
   useEffect(() => {
     fetchProducts();
+    fetchPromoSettings();
     
     if (import.meta.env.VITE_SUPABASE_URL) {
       // Auth Listener
@@ -53,7 +55,7 @@ function App() {
           'postgres_changes',
           { event: '*', schema: 'public', table: 'products' },
           (payload) => {
-            console.log('⚡ Realtime Event Received:', payload);
+            // console.log('⚡ Realtime Event Received:', payload);
             if (payload.eventType === 'INSERT') {
               setProductsList(prev => {
                  if (prev.find(p => p.id === payload.new.id)) return prev;
@@ -67,7 +69,7 @@ function App() {
           }
         )
         .subscribe((status, err) => {
-           console.log('📡 Realtime Subscription Status:', status, err ? `Error: ${err}` : '');
+           // console.log('📡 Realtime Subscription Status:', status, err ? `Error: ${err}` : '');
         });
 
       return () => {
@@ -78,10 +80,10 @@ function App() {
   }, []);
 
   const fetchProducts = async () => {
-    console.log('🔄 Initiating Database Fetch...');
+    // console.log('🔄 Initiating Database Fetch...');
     setIsLoading(true);
     if (!import.meta.env.VITE_SUPABASE_URL) {
-      console.warn('⚠️ Supabase URL not configured. Aborting fetch.');
+      // console.warn('⚠️ Supabase URL not configured. Aborting fetch.');
       setProductsList([]);
       setIsLoading(false);
       return;
@@ -90,12 +92,12 @@ function App() {
     const { data, error } = await supabase.from('products').select('*');
     
     if (error) {
-      console.error('❌ Supabase Fetch Error:', error);
-      console.error('❌ Error Details:', error.message, error.hint, error.details);
+      // console.error('❌ Supabase Fetch Error:', error);
+      // console.error('❌ Error Details:', error.message, error.hint, error.details);
       alert(`Supabase Fetch Error: ${error.message} \n Hint: ${error.hint}`);
       setProductsList([]);
     } else {
-      console.log(`✅ Successfully fetched ${data?.length || 0} products from Supabase.`, data);
+      // console.log(`✅ Successfully fetched ${data?.length || 0} products from Supabase.`, data);
       const sortedData = (data || []).sort((a: any, b: any) => {
          const orderA = a.order_index ?? a.id;
          const orderB = b.order_index ?? b.id;
@@ -104,6 +106,19 @@ function App() {
       setProductsList(sortedData);
     }
     setIsLoading(false);
+  };
+
+  const fetchPromoSettings = async () => {
+    if (!import.meta.env.VITE_SUPABASE_URL) return;
+    const { data, error } = await supabase.from('promo_settings').select('*').single();
+    if (!error && data) {
+      setPromoSettings(data);
+    } else if (error && error.code === 'PGRST116') {
+      // No rows found, which is fine
+      setPromoSettings(null);
+    } else {
+      // console.error('Error fetching promo settings:', error);
+    }
   };
 
   const renderHeader = () => (
@@ -142,6 +157,7 @@ function App() {
              setCurrentTab('products');
           }}
           initialShowOrderModal={isDirectBuy}
+          promoSettings={promoSettings}
         />
         <WhatsAppButton />
       </>
@@ -197,6 +213,8 @@ function App() {
              isAdminLoggedIn={isAdminLoggedIn}
              setIsAdminLoggedIn={setIsAdminLoggedIn}
              setCurrentTab={setCurrentTab}
+             promoSettings={promoSettings}
+             setPromoSettings={setPromoSettings}
            />
         )}
         
@@ -206,6 +224,7 @@ function App() {
              onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
              onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
              isLoading={isLoading}
+             promoSettings={promoSettings}
            />
         )}
 
@@ -215,6 +234,7 @@ function App() {
              setCurrentTab={setCurrentTab}
              onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
              onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
+             promoSettings={promoSettings}
            />
         )}
       </main>

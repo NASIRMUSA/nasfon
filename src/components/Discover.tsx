@@ -1,14 +1,32 @@
-import { ShieldCheck, Truck, HeadphonesIcon } from 'lucide-react';
-import type { Product } from '../types';
+import { ShieldCheck, Truck, HeadphonesIcon, Tag } from 'lucide-react';
+import type { Product, PromoSettings } from '../types';
 
 interface DiscoverProps {
   productsList: Product[];
   setCurrentTab: (tab: string) => void;
   onViewProduct: (product: Product) => void;
   onBuyProduct: (product: Product) => void;
+  promoSettings?: PromoSettings | null;
 }
 
-export default function Discover({ productsList, setCurrentTab, onViewProduct, onBuyProduct }: DiscoverProps) {
+export default function Discover({ productsList, setCurrentTab, onViewProduct, onBuyProduct, promoSettings }: DiscoverProps) {
+  const isPromoActive = () => {
+    if (!promoSettings || !promoSettings.is_active) return false;
+    const now = new Date();
+    const start = new Date(promoSettings.start_date);
+    const end = new Date(promoSettings.end_date);
+    end.setHours(23, 59, 59, 999);
+    return now >= start && now <= end;
+  };
+
+  const activePromo = isPromoActive();
+
+  const getDiscountedPrice = (price: string) => {
+    if (!activePromo || !promoSettings) return price;
+    const numericPrice = parseFloat(price.replace(/,/g, ''));
+    const discounted = numericPrice * (1 - (promoSettings.discount_percentage / 100));
+    return discounted.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  };
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h1 className="font-display text-5xl font-bold mt-2 mb-6 leading-[1.1] tracking-tight">
@@ -18,6 +36,20 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
         Clean design. Quality sound. Affordable price. Curated for those who demand excellence in every detail.
       </p>
       
+      {activePromo && (
+        <div className="bg-red-600/10 border border-red-600/20 rounded-2xl p-4 mb-8 animate-in slide-in-from-top-4 duration-700">
+          <div className="flex items-center gap-3">
+            <div className="bg-red-600 text-white p-2 rounded-lg">
+              <Tag size={20} />
+            </div>
+            <div>
+              <h3 className="text-red-600 font-bold text-sm">{promoSettings?.event_name} is LIVE!</h3>
+              <p className="text-red-600/70 text-xs font-medium">Enjoy {promoSettings?.discount_percentage}% OFF everything in store.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button 
         onClick={() => setCurrentTab('products')}
         className="bg-[#003b8e] text-white px-8 py-3.5 rounded-xl font-medium mb-12 shadow-md hover:bg-black transition-colors"
@@ -56,8 +88,15 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
                 alt={item.name}
                 className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                <span className="text-[10px] font-bold text-gray-900 tracking-tight">FEATURED</span>
+              <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+                <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                  <span className="text-[10px] font-bold text-gray-900 tracking-tight">FEATURED</span>
+                </div>
+                {activePromo && (
+                   <div className="bg-red-600 text-white px-2 py-0.5 rounded-full shadow-sm">
+                     <span className="text-[8px] font-bold tracking-tight">-{promoSettings?.discount_percentage}%</span>
+                   </div>
+                )}
               </div>
             </div>
     
@@ -67,7 +106,12 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
                 <h3 className="font-display font-bold text-xl tracking-tight text-gray-900 group-hover:text-[#003b8e] transition-colors leading-tight truncate pr-4">
                   {item.name}
                 </h3>
-                <span className="text-lg font-bold text-[#003b8e] shrink-0">₦{item.price}</span>
+                <div className="flex flex-col items-end">
+                  <span className="text-lg font-bold text-[#003b8e] shrink-0">₦{getDiscountedPrice(item.price)}</span>
+                  {activePromo && (
+                    <span className="text-[10px] text-gray-400 line-through">₦{item.price}</span>
+                  )}
+                </div>
               </div>
     
               <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed mb-5">

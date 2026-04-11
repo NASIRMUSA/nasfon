@@ -2,27 +2,45 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Minus, Plus } from 'lucide-react';
 import { usePaystackPayment } from 'react-paystack';
-import type { Product } from '../types';
+import type { Product, PromoSettings } from '../types';
 
 interface ProductDetailsProps {
   product: Product;
   onClose: () => void;
   onSuccessReturn: () => void;
   initialShowOrderModal?: boolean;
+  promoSettings?: PromoSettings | null;
 }
 
-export default function ProductDetails({ product, onClose, onSuccessReturn, initialShowOrderModal = false }: ProductDetailsProps) {
+export default function ProductDetails({ product, onClose, onSuccessReturn, initialShowOrderModal = false, promoSettings }: ProductDetailsProps) {
+  const isPromoActive = () => {
+    if (!promoSettings || !promoSettings.is_active) return false;
+    const now = new Date();
+    const start = new Date(promoSettings.start_date);
+    const end = new Date(promoSettings.end_date);
+    end.setHours(23, 59, 59, 999);
+    return now >= start && now <= end;
+  };
+
+  const activePromo = isPromoActive();
+
+  const getDiscountedPriceRaw = (price: string) => {
+    const numericPrice = parseFloat(price.replace(/,/g, ''));
+    if (!activePromo || !promoSettings) return numericPrice;
+    return numericPrice * (1 - (promoSettings.discount_percentage / 100));
+  };
+
   const [showOrderModal, setShowOrderModal] = useState(initialShowOrderModal);
   const [isSuccess, setIsSuccess] = useState(false);
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [quantity, setQuantity] = useState(1);
 
-  const currentPriceRaw = parseInt(String(product.price).replace(/,/g, ''), 10);
+  const currentPriceRaw = getDiscountedPriceRaw(product.price);
   const paystackConfig = {
       reference: `ref_${(new Date()).getTime()}`,
       email: "customer@example.com",
-      amount: currentPriceRaw * quantity * 100, // kobo
+      amount: Math.round(currentPriceRaw * quantity * 100), // kobo
       publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
       metadata: {
         custom_fields: [
@@ -120,13 +138,20 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
         <div className="p-4">
           <div className="bg-gray-100 rounded-[2.5rem] overflow-hidden mb-6 relative aspect-[4/5] w-full group">
             <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            {product.badge && (
-              <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold z-10
-                ${product.badge === 'SOLD OUT' ? 'bg-red-500 text-white' : 'bg-white text-gray-900 shadow-md'}
-              `}>
-                {product.badge}
-              </div>
-            )}
+            <div className="absolute top-4 left-4 flex flex-col gap-2">
+              {product.badge && (
+                <div className={`px-3 py-1 rounded-full text-xs font-semibold z-10 w-fit
+                  ${product.badge === 'SOLD OUT' ? 'bg-red-500 text-white' : 'bg-white text-gray-900 shadow-md'}
+                `}>
+                  {product.badge}
+                </div>
+              )}
+              {activePromo && (
+                <div className="bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wide z-10 w-fit shadow-md animate-pulse">
+                  {promoSettings?.event_name} ONGOING
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="px-2">
@@ -137,8 +162,15 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
                 ))}
               </h1>
             </div>
-            <div className="text-xl font-bold text-gray-900 mb-6 flex items-baseline gap-1">
-              <span className="text-base font-semibold">₦</span> {(currentPriceRaw * quantity).toLocaleString()}
+            <div className="text-xl font-bold text-gray-900 mb-6 flex flex-col gap-1">
+              <div className="flex items-baseline gap-1">
+                <span className="text-base font-semibold">₦</span> {(currentPriceRaw * quantity).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+              {activePromo && (
+                <div className="text-xs text-gray-400 font-medium">
+                  Was <span className="line-through">₦ {(parseFloat(product.price.replace(/,/g, '')) * quantity).toLocaleString()}</span> ({promoSettings?.discount_percentage}% off!)
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-4 mb-6">
