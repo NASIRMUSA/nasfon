@@ -68,8 +68,8 @@ function App() {
             }
           }
         )
-        .subscribe((status, err) => {
-           // console.log('📡 Realtime Subscription Status:', status, err ? `Error: ${err}` : '');
+        .subscribe((_status, _err) => {
+           // console.log('📡 Realtime Subscription Status:', _status, _err ? `Error: ${_err}` : '');
         });
 
       return () => {
