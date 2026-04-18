@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Menu, Globe, Settings } from 'lucide-react';
-import { supabase } from './supabase';
-import type { Product, PromoSettings } from './types';
+import type { Product } from './types';
 import Discover from './components/Discover';
 import ProductList from './components/ProductList';
 import ProductDetails from './components/ProductDetails';
 import AdminPanel from './components/AdminPanel';
+import CountdownTimer from './components/CountdownTimer';
+import { useProducts } from './hooks/useProducts';
+import { useAuth } from './hooks/useAuth';
+import { usePushNotifications } from './hooks/usePushNotifications';
+import { useSecurity } from './hooks/useSecurity';
 
 function WhatsAppButton() {
   return (
@@ -28,124 +32,14 @@ function WhatsAppButton() {
 
 function App() {
   const [currentTab, setCurrentTab] = useState('products'); // 'products' | 'collections' | 'admin'
-  const [productsList, setProductsList] = useState<Product[]>([]);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isDirectBuy, setIsDirectBuy] = useState(false);
-  const [promoSettings, setPromoSettings] = useState<PromoSettings | null>(null);
 
-  useEffect(() => {
-    const handleCopy = (e: ClipboardEvent) => {
-      // Prevent copying for everything except inputs/textareas
-      const target = e.target as HTMLElement;
-      if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-      }
-    };
-
-    const handleContextMenu = (e: MouseEvent) => {
-      // Prevent right-click context menu (often used to copy text or save images)
-      // but allow it for inputs so users can still paste if needed
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-      e.preventDefault();
-    };
-
-    window.addEventListener('copy', handleCopy);
-    window.addEventListener('contextmenu', handleContextMenu);
-
-    return () => {
-      window.removeEventListener('copy', handleCopy);
-      window.removeEventListener('contextmenu', handleContextMenu);
-    };
-  }, []);
-
-  useEffect(() => {
-    fetchProducts();
-    fetchPromoSettings();
-    
-    if (import.meta.env.VITE_SUPABASE_URL) {
-      // Auth Listener
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setIsAdminLoggedIn(!!session);
-      });
-
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setIsAdminLoggedIn(!!session);
-      });
-
-      // Realtime Database Listener
-      const productsChannel = supabase.channel('products-all')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'products' },
-          (payload) => {
-            // console.log('⚡ Realtime Event Received:', payload);
-            if (payload.eventType === 'INSERT') {
-              setProductsList(prev => {
-                 if (prev.find(p => p.id === payload.new.id)) return prev;
-                 return [...prev, payload.new as Product];
-              });
-            } else if (payload.eventType === 'UPDATE') {
-              setProductsList(prev => prev.map(p => p.id === payload.new.id ? payload.new as Product : p));
-            } else if (payload.eventType === 'DELETE') {
-              setProductsList(prev => prev.filter(p => p.id !== payload.old.id));
-            }
-          }
-        )
-        .subscribe((_status, _err) => {
-           // console.log('📡 Realtime Subscription Status:', _status, _err ? `Error: ${_err}` : '');
-        });
-
-      return () => {
-        subscription.unsubscribe();
-        supabase.removeChannel(productsChannel);
-      };
-    }
-  }, []);
-
-  const fetchProducts = async () => {
-    // console.log('🔄 Initiating Database Fetch...');
-    setIsLoading(true);
-    if (!import.meta.env.VITE_SUPABASE_URL) {
-      // console.warn('⚠️ Supabase URL not configured. Aborting fetch.');
-      setProductsList([]);
-      setIsLoading(false);
-      return;
-    }
-    
-    const { data, error } = await supabase.from('products').select('*');
-    
-    if (error) {
-      // console.error('❌ Supabase Fetch Error:', error);
-      // console.error('❌ Error Details:', error.message, error.hint, error.details);
-      alert(`Supabase Fetch Error: ${error.message} \n Hint: ${error.hint}`);
-      setProductsList([]);
-    } else {
-      // console.log(`✅ Successfully fetched ${data?.length || 0} products from Supabase.`, data);
-      const sortedData = (data || []).sort((a: any, b: any) => {
-         const orderA = a.order_index ?? a.id;
-         const orderB = b.order_index ?? b.id;
-         return orderA - orderB;
-      });
-      setProductsList(sortedData);
-    }
-    setIsLoading(false);
-  };
-
-  const fetchPromoSettings = async () => {
-    if (!import.meta.env.VITE_SUPABASE_URL) return;
-    const { data, error } = await supabase.from('promo_settings').select('*').single();
-    if (!error && data) {
-      setPromoSettings(data);
-    } else if (error && error.code === 'PGRST116') {
-      // No rows found, which is fine
-      setPromoSettings(null);
-    } else {
-      // console.error('Error fetching promo settings:', error);
-    }
-  };
+  // Custom Hooks
+  const { productsList, setProductsList, isLoading, promoSettings, setPromoSettings } = useProducts();
+  const { isAdminLoggedIn, setIsAdminLoggedIn } = useAuth();
+  usePushNotifications();
+  useSecurity();
 
   const renderHeader = () => (
     <header className="flex items-center justify-between px-6 py-5 sticky top-0 bg-[#f7f7f9]/80 backdrop-blur-md z-10">
@@ -154,7 +48,7 @@ function App() {
       </button>
       <div className="absolute left-1/2 -translate-x-1/2">
         <span className="flex items-center cursor-pointer" onClick={() => { setViewingProduct(null); setCurrentTab('products'); }}>
-          <img src="https://res.cloudinary.com/dxja7dt9a/image/upload/v1775732736/nasfon-logo-transparent_oyeozo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
+          <img src="/logo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
         </span>
       </div>
       <button className="p-2 -mr-2 rounded-full hover:bg-gray-200 transition-colors relative" onClick={() => setCurrentTab('admin')}>
@@ -203,7 +97,7 @@ function App() {
               "@type": "OnlineStore",
               "name": "Nasfon",
               "description": "Premium Tech Accessories and Electronics Boutique in Nigeria",
-              "image": "https://res.cloudinary.com/dxja7dt9a/image/upload/v1775732736/nasfon-logo-transparent_oyeozo.png",
+              "image": "https://nasfon.netlify.app/logo.png",
               "url": "https://nasfon.netlify.app",
               "priceRange": "₦₦",
               "address": {
@@ -232,6 +126,8 @@ function App() {
       )}
 
       <main className="px-6 pb-20">
+        {currentTab !== 'admin' && promoSettings && <CountdownTimer promoSettings={promoSettings} />}
+        
         {currentTab === 'admin' && (
            <AdminPanel 
              productsList={productsList} 

@@ -1,5 +1,5 @@
-import { ShieldCheck, Tag } from 'lucide-react';
-import ProtectedImage from './ProtectedImage';
+import { ShieldCheck } from 'lucide-react';
+import ProductCard from './ProductCard';
 import type { Product, PromoSettings } from '../types';
 
 interface ProductListProps {
@@ -11,29 +11,9 @@ interface ProductListProps {
 }
 
 export default function ProductList({ productsList, onViewProduct, onBuyProduct, isLoading, promoSettings }: ProductListProps) {
-  const isPromoActive = () => {
-    if (!promoSettings || !promoSettings.is_active) return false;
-    const now = new Date();
-    const start = new Date(promoSettings.start_date);
-    const end = new Date(promoSettings.end_date);
-    end.setHours(23, 59, 59, 999);
-    return now >= start && now <= end;
-  };
-
-  const activePromo = isPromoActive();
-
-  const getDiscountedPrice = (price: string) => {
-    if (!activePromo || !promoSettings) return price;
-    const numericPrice = parseFloat(price.replace(/,/g, ''));
-    const discounted = numericPrice * (1 - (promoSettings.discount_percentage / 100));
-    return discounted.toLocaleString(undefined, { maximumFractionDigits: 0 });
-  };
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h1 className="font-display text-4xl font-bold mt-2 mb-4 tracking-tight">Products</h1>
-      {/* <p className="text-gray-500 text-sm leading-relaxed mb-10">
-        Precision-engineered accessories for the modern professional. Curated for performance, status, and everyday utility.
-      </p> */}
 
       {isLoading ? (
         <div className="grid grid-cols-2 gap-3 sm:gap-5">
@@ -52,55 +32,14 @@ export default function ProductList({ productsList, onViewProduct, onBuyProduct,
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:gap-5">
           {productsList.map(product => (
-            <div key={product.id} className="group flex flex-col">
-              <div className="relative bg-white rounded-2xl aspect-square overflow-hidden mb-3 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] cursor-pointer"
-                   onClick={() => onViewProduct(product)}>
-                <ProtectedImage 
-                  src={product.image} 
-                  alt={product.name} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                  wrapperClassName="w-full h-full"
-                />
-                {product.badge && (
-                  <div className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide z-10
-                    ${product.badge === 'SOLD OUT' ? 'bg-black text-white' : 'bg-white/90 backdrop-blur text-gray-900'}
-                  `}>
-                    {product.badge}
-                  </div>
-                )}
-                {activePromo && (
-                  <div className="absolute top-2.5 left-2.5 bg-red-600 text-white px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide z-10 flex items-center gap-1 shadow-sm">
-                    <Tag size={10} />
-                    {promoSettings?.event_name}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col flex-1 px-1">
-                <h3 className="font-display font-bold text-sm sm:text-base mb-1 truncate">{product.name}</h3>
-                <p className="text-xs text-gray-500 mb-2 line-clamp-2 leading-relaxed">
-                  {product.description.split('\n')[0]}
-                </p>
-                
-                <div className="mt-auto flex flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#003b8e] text-sm sm:text-base">
-                      ₦ {getDiscountedPrice(product.price)}
-                    </span>
-                    {activePromo && (
-                      <span className="text-[10px] text-gray-400 line-through">
-                        ₦ {product.price}
-                      </span>
-                    )}
-                  </div>
-                  <button 
-                    onClick={() => onBuyProduct(product)}
-                    className="w-full bg-[#003b8e]/5 text-[#003b8e] border border-[#003b8e]/10 py-2 rounded-xl text-xs font-bold hover:bg-[#003b8e] hover:text-white transition-colors"
-                  >
-                    Buy Now
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ProductCard 
+              key={product.id}
+              product={product}
+              onView={onViewProduct}
+              onBuy={onBuyProduct}
+              promoSettings={promoSettings}
+              variant="grid"
+            />
           ))}
         </div>
       )}

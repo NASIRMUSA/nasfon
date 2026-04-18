@@ -1,6 +1,8 @@
 import { ShieldCheck, Truck, HeadphonesIcon, Tag } from 'lucide-react';
 import ProtectedImage from './ProtectedImage';
+import ProductCard from './ProductCard';
 import type { Product, PromoSettings } from '../types';
+import { isPromoActive } from '../utils/productUtils';
 
 interface DiscoverProps {
   productsList: Product[];
@@ -11,23 +13,8 @@ interface DiscoverProps {
 }
 
 export default function Discover({ productsList, setCurrentTab, onViewProduct, onBuyProduct, promoSettings }: DiscoverProps) {
-  const isPromoActive = () => {
-    if (!promoSettings || !promoSettings.is_active) return false;
-    const now = new Date();
-    const start = new Date(promoSettings.start_date);
-    const end = new Date(promoSettings.end_date);
-    end.setHours(23, 59, 59, 999);
-    return now >= start && now <= end;
-  };
+  const activePromo = isPromoActive(promoSettings);
 
-  const activePromo = isPromoActive();
-
-  const getDiscountedPrice = (price: string) => {
-    if (!activePromo || !promoSettings) return price;
-    const numericPrice = parseFloat(price.replace(/,/g, ''));
-    const discounted = numericPrice * (1 - (promoSettings.discount_percentage / 100));
-    return discounted.toLocaleString(undefined, { maximumFractionDigits: 0 });
-  };
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h1 className="font-display text-5xl font-bold mt-2 mb-6 leading-[1.1] tracking-tight">
@@ -82,74 +69,14 @@ export default function Discover({ productsList, setCurrentTab, onViewProduct, o
 
       <div className="space-y-6 pb-10">
         {productsList.slice(0, 3).map((item) => (
-          <div
+          <ProductCard 
             key={item.id}
-            onClick={() => onViewProduct(item)}
-            className="w-full bg-white rounded-[2.5rem] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.03)] border border-gray-100/50 hover:shadow-xl hover:shadow-black/5 transition-all duration-300 cursor-pointer group"
-          >
-            {/* Image */}
-            <div className="bg-[#f8f9fb] rounded-[2rem] aspect-[16/10] overflow-hidden mb-5 relative p-6 flex items-center justify-center">
-              <ProtectedImage
-                src={item.image}
-                alt={item.name}
-                className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
-                wrapperClassName="w-full h-full"
-              />
-              <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-                <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                  <span className="text-[10px] font-bold text-gray-900 tracking-tight">FEATURED</span>
-                </div>
-                {activePromo && (
-                   <div className="bg-red-600 text-white px-2 py-0.5 rounded-full shadow-sm">
-                     <span className="text-[8px] font-bold tracking-tight">-{promoSettings?.discount_percentage}%</span>
-                   </div>
-                )}
-              </div>
-            </div>
-    
-            {/* Content */}
-            <div className="flex flex-col px-1">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-display font-bold text-xl tracking-tight text-gray-900 group-hover:text-[#003b8e] transition-colors leading-tight truncate pr-4">
-                  {item.name}
-                </h3>
-                <div className="flex flex-col items-end">
-                  <span className="text-lg font-bold text-[#003b8e] shrink-0">₦{getDiscountedPrice(item.price)}</span>
-                  {activePromo && (
-                    <span className="text-[10px] text-gray-400 line-through">₦{item.price}</span>
-                  )}
-                </div>
-              </div>
-    
-              <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed mb-5">
-                {item.description}
-              </p>
-    
-              {/* Footer / Buy Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onBuyProduct(item);
-                }}
-                className="w-full bg-[#003b8e] text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-[#003b8e]/20 hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-              >
-                Buy Now
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18" height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14" />
-                  <path d="m12 5 7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
+            product={item}
+            onView={onViewProduct}
+            onBuy={onBuyProduct}
+            promoSettings={promoSettings}
+            variant="featured"
+          />
         ))}
       </div>
 

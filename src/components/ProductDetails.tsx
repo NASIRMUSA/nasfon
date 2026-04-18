@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import ProtectedImage from './ProtectedImage';
+import DeliveryModal from './DeliveryModal';
+import type { PaymentMethod } from './DeliveryModal';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Minus, Plus } from 'lucide-react';
 import { usePaystackPayment } from 'react-paystack';
+import { supabase } from '../supabase';
 import type { Product, PromoSettings } from '../types';
+import { isPromoActive, getDiscountedPrice } from '../utils/productUtils';
 
 interface ProductDetailsProps {
   product: Product;
@@ -14,27 +18,18 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ product, onClose, onSuccessReturn, initialShowOrderModal = false, promoSettings }: ProductDetailsProps) {
-  const isPromoActive = () => {
-    if (!promoSettings || !promoSettings.is_active) return false;
-    const now = new Date();
-    const start = new Date(promoSettings.start_date);
-    const end = new Date(promoSettings.end_date);
-    end.setHours(23, 59, 59, 999);
-    return now >= start && now <= end;
-  };
-
-  const activePromo = isPromoActive();
+  const activePromo = isPromoActive(promoSettings);
 
   const getDiscountedPriceRaw = (price: string) => {
-    const numericPrice = parseFloat(price.replace(/,/g, ''));
-    if (!activePromo || !promoSettings) return numericPrice;
-    return numericPrice * (1 - (promoSettings.discount_percentage / 100));
+    const discountedStr = getDiscountedPrice(price, promoSettings);
+    return parseFloat(discountedStr.replace(/,/g, ''));
   };
 
   const [showOrderModal, setShowOrderModal] = useState(initialShowOrderModal);
   const [isSuccess, setIsSuccess] = useState(false);
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pay_now');
   const [quantity, setQuantity] = useState(1);
 
   const currentPriceRaw = getDiscountedPriceRaw(product.price);
@@ -47,18 +42,59 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
         custom_fields: [
           { display_name: "Phone Number", variable_name: "phone_number", value: customerPhone },
           { display_name: "Delivery Address", variable_name: "address", value: customerAddress },
-          { display_name: "Quantity", variable_name: "quantity", value: quantity.toString() }
+          { display_name: "Quantity", variable_name: "quantity", value: quantity.toString() },
+          { display_name: "Payment Method", variable_name: "payment_method", value: paymentMethod }
         ]
       }
   };
   const initializePayment = usePaystackPayment(paystackConfig);
+
+  const handleProceedToPayment = async () => {
+    if (!customerPhone.trim() || !customerAddress.trim()) {
+      alert("Please fill in both phone number and delivery address.");
+      return;
+    }
+
+    const orderData = {
+      customer_phone: customerPhone,
+      customer_address: customerAddress,
+      product_name: product.name,
+      quantity: quantity,
+      total_price: currentPriceRaw * quantity,
+      payment_method: paymentMethod,
+      status: 'pending'
+    };
+
+    if (paymentMethod === 'pay_on_delivery') {
+      const { error } = await supabase.from('orders').insert([orderData]);
+      if (error) {
+        console.error("Order error:", error);
+      }
+      setShowOrderModal(false);
+      setIsSuccess(true);
+      return;
+    }
+
+    if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
+      alert("Please add VITE_PAYSTACK_PUBLIC_KEY to your .env file");
+      return;
+    }
+    initializePayment({
+      onSuccess: async () => { 
+        await supabase.from('orders').insert([{ ...orderData, status: 'paid' }]);
+        setShowOrderModal(false); 
+        setIsSuccess(true); 
+      },
+      onClose: () => {}
+    });
+  };
 
   if (isSuccess) {
     return (
       <div className="min-h-screen max-w-md mx-auto bg-white flex flex-col pt-12 pb-8 relative shadow-2xl overflow-hidden">
         <header className="flex items-center justify-between px-6 py-5 sticky top-0 bg-white z-10">
           <div className="font-display font-bold text-xl tracking-tight text-[#003b8e] absolute left-1/2 -translate-x-1/2">
-            <img src="https://res.cloudinary.com/dxja7dt9a/image/upload/v1775732736/nasfon-logo-transparent_oyeozo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
+            <img src="/logo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
           </div>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center text-gray-800 mt-[10vh]">
@@ -131,7 +167,7 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
           <ArrowLeft size={24} className="text-gray-800" />
         </button>
           <div className="font-display font-bold text-xl tracking-tight text-[#003b8e] absolute left-1/2 -translate-x-1/2">
-            <img src="https://res.cloudinary.com/dxja7dt9a/image/upload/v1775732736/nasfon-logo-transparent_oyeozo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
+            <img src="/logo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
           </div>
       </header>
       
@@ -218,45 +254,17 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
         </div>
       </div>
 
-      {showOrderModal && (
-        <div className="absolute inset-0 bg-black/60 z-50 flex flex-col justify-end">
-          <div className="bg-white rounded-t-[2.5rem] p-6 pt-8 pb-10 shadow-2xl animate-in slide-in-from-bottom-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-display font-bold text-2xl">Delivery Details</h2>
-              <button onClick={() => setShowOrderModal(false)} className="text-gray-400 hover:text-gray-900 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center text-xl pb-1">×</button>
-            </div>
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Phone Number</label>
-                <input type="tel" placeholder="0801 234 5678" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#003b8e]" />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Delivery Address</label>
-                <textarea placeholder="Enter full delivery address..." rows={3} value={customerAddress} onChange={e => setCustomerAddress(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#003b8e] resize-none"></textarea>
-              </div>
-            </div>
-            <button 
-              onClick={() => {
-                if (!customerPhone.trim() || !customerAddress.trim()) {
-                  alert("Please fill in both phone number and delivery address.");
-                  return;
-                }
-                if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
-                  alert("Please add VITE_PAYSTACK_PUBLIC_KEY to your .env file");
-                  return;
-                }
-                initializePayment({
-                  onSuccess: () => { setShowOrderModal(false); setIsSuccess(true); },
-                  onClose: () => {}
-                });
-              }}
-              className="w-full bg-[#003b8e] text-white py-4 rounded-xl font-medium text-lg hover:bg-black transition-transform active:scale-[0.98]"
-            >
-              Proceed to Payment
-            </button>
-          </div>
-        </div>
-      )}
+      <DeliveryModal 
+        isOpen={showOrderModal}
+        onClose={() => setShowOrderModal(false)}
+        customerPhone={customerPhone}
+        setCustomerPhone={setCustomerPhone}
+        customerAddress={customerAddress}
+        setCustomerAddress={setCustomerAddress}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={handleProceedToPayment}
+      />
     </div>
   );
 }
