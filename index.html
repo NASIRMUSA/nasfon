@@ -2,7 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    <link rel="dns-prefetch" href="https://res.cloudinary.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="preload" as="image" href="/logo.png" fetchpriority="high" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <meta name="google-site-verification" content="googlee35db172d8372b55" />
@@ -11,7 +17,19 @@
     <meta name="description" content="Elevate your tech lifestyle with Nasfon. Discover high-end headphones, sleek mobile accessories, and premium gadgets. Fast door-to-door delivery across Nigeria and secure payments." />
     <meta name="keywords" content="Nasfon gadgets, premium electronics Nigeria, high-end headphones Lagos, boutique tech store, luxury mobile accessories, Nasfon headphones" />
     <meta name="author" content="Nasfon" />
-    <meta name="theme-color" content="#003b8e" />
+    <meta name="theme-color" content="#f7f7f9" />
+    <script>
+      // Early fetch to bypass React waterfall
+      (function() {
+        const url = "%VITE_SUPABASE_URL%";
+        const key = "%VITE_SUPABASE_ANON_KEY%";
+        if (url && key) {
+          const headers = { "apikey": key, "Authorization": "Bearer " + key };
+          window.__PRODUCTS_DATA__ = fetch(url + "/rest/v1/products?select=*&order=order_index.asc.nullslast", { headers }).then(r => r.json()).catch(() => null);
+          window.__PROMO_DATA__ = fetch(url + "/rest/v1/promo_settings?select=*", { headers }).then(r => r.json()).catch(() => null);
+        }
+      })();
+    </script>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />

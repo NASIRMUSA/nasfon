@@ -24,24 +24,28 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         <button 
           onClick={onShowPromo} 
           className={`p-3 rounded-full shadow-md transition-colors ${promoSettings?.is_active ? 'bg-red-500 text-white animate-pulse' : 'bg-white text-gray-800 border border-gray-200'}`}
+          aria-label="Toggle Promo Settings"
         >
           <Settings size={20} />
         </button>
         <button 
           onClick={onShowNotification} 
           className="bg-white text-gray-800 border border-gray-200 p-3 rounded-full shadow-md hover:bg-gray-50 transition-colors"
+          aria-label="Send Push Notification"
         >
           <Bell size={20} />
         </button>
         <button 
           onClick={onLogout} 
           className="bg-gray-100 text-gray-800 p-3 rounded-full shadow-sm hover:bg-gray-200 transition-colors"
+          aria-label="Logout"
         >
           <X size={20} />
         </button>
         <button 
           onClick={onAddProduct} 
           className="bg-[#003b8e] text-white p-3 rounded-full shadow-md hover:bg-black transition-colors"
+          aria-label="Add New Product"
         >
           <Plus size={20} />
         </button>

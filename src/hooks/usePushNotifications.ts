@@ -20,10 +20,9 @@ export function usePushNotifications() {
             return;
           }
 
-          // console.log("✅ [Firebase Push] Permission granted. Registering...");
-          await PushNotifications.register();
-
-          PushNotifications.addListener('registration', async (token) => {
+          // console.log("✅ [Firebase Push] Permission granted. Setting up listeners...");
+          
+          await PushNotifications.addListener('registration', async (token) => {
             console.log('🔥 [Firebase Push] Push registration success, token: ' + token.value);
             
             // Handle unique device ID for "New User" tracking
@@ -35,35 +34,46 @@ export function usePushNotifications() {
             }
 
             if (import.meta.env.VITE_SUPABASE_URL) {
+              console.log("💾 [Firebase Push] Saving token to Supabase...");
               const { error } = await supabase.from('fcm_tokens').upsert({ 
                 token: token.value, 
                 device_id: deviceId,
                 updated_at: new Date().toISOString() 
               }, { onConflict: 'token' });
               
-              if (error) console.error("Error saving token:", error);
+              if (error) {
+                console.error("❌ [Firebase Push] Error saving token to DB:", error);
+              } else {
+                console.log("✅ [Firebase Push] Token saved successfully.");
+              }
+            } else {
+              console.warn("⚠️ [Firebase Push] VITE_SUPABASE_URL missing, token not saved.");
             }
           });
 
-          PushNotifications.addListener('registrationError', (error: any) => {
+          await PushNotifications.addListener('registrationError', (error: any) => {
               console.error('❌ [Firebase Push] Error on registration: ' + JSON.stringify(error));
           });
 
-          PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          await PushNotifications.addListener('pushNotificationReceived', (notification) => {
             console.log('🚀 [Firebase Push] Push received in foreground: ' + JSON.stringify(notification));
             // Show a simple alert or toast if the app is open
             alert(`New Notification:\n${notification.title}\n${notification.body}`);
           });
 
-          PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+          await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
             console.log('🚀 [Firebase Push] Push action performed: ' + JSON.stringify(notification));
           });
+
+          // Register AFTER listeners are attached
+          console.log("📡 [Firebase Push] Calling register()...");
+          await PushNotifications.register();
 
         } catch (error) {
           console.error("❌ [Firebase Push] Initialization error:", error);
         }
       } else {
-        // console.log("ℹ️ [Firebase Push] Skipping init: App is running in Web Browser.");
+        console.log("ℹ️ [Firebase Push] Skipping init: App is running in Web Browser.");
       }
     };
 

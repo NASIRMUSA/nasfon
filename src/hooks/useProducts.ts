@@ -42,8 +42,36 @@ export function useProducts() {
   }, []);
 
   useEffect(() => {
-    fetchProducts();
-    fetchPromoSettings();
+    // Try to use early-fetched data from index.html
+    const tryEarlyFetch = async () => {
+      let productsLoaded = false;
+      let promoLoaded = false;
+
+      const productsPromise = (window as any).__PRODUCTS_DATA__;
+      const promoPromise = (window as any).__PROMO_DATA__;
+
+      if (productsPromise) {
+        const data = await productsPromise;
+        if (data && Array.isArray(data)) {
+          setProductsList(data);
+          setIsLoading(false);
+          productsLoaded = true;
+        }
+      }
+
+      if (promoPromise) {
+        const data = await promoPromise;
+        if (data) {
+          setPromoSettings(Array.isArray(data) ? data[0] : data);
+          promoLoaded = true;
+        }
+      }
+
+      if (!productsLoaded) fetchProducts();
+      if (!promoLoaded) fetchPromoSettings();
+    };
+
+    tryEarlyFetch();
     
     if (import.meta.env.VITE_SUPABASE_URL) {
       const productsChannel = supabase.channel('products-all')

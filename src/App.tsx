@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Menu, Globe, Settings } from 'lucide-react';
 import type { Product } from './types';
-import Discover from './components/Discover';
-import ProductList from './components/ProductList';
-import ProductDetails from './components/ProductDetails';
-import AdminPanel from './components/AdminPanel';
-import CountdownTimer from './components/CountdownTimer';
 import { useProducts } from './hooks/useProducts';
 import { useAuth } from './hooks/useAuth';
 import { usePushNotifications } from './hooks/usePushNotifications';
+
+// Lazy load components
+const Discover = lazy(() => import('./components/Discover'));
+const ProductList = lazy(() => import('./components/ProductList'));
+const ProductDetails = lazy(() => import('./components/ProductDetails'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const CountdownTimer = lazy(() => import('./components/CountdownTimer'));
 import { useSecurity } from './hooks/useSecurity';
 
 function WhatsAppButton() {
@@ -43,22 +45,29 @@ function App() {
 
   const renderHeader = () => (
     <header className="flex items-center justify-between px-6 py-5 sticky top-0 bg-[#f7f7f9]/80 backdrop-blur-md z-10">
-      <button className="p-2 -ml-2 rounded-full hover:bg-gray-200 transition-colors">
+      <button className="p-2 -ml-2 rounded-full hover:bg-gray-200 transition-colors" aria-label="Open Menu">
         <Menu size={24} className="text-gray-800" />
       </button>
       <div className="absolute left-1/2 -translate-x-1/2">
         <span className="flex items-center cursor-pointer" onClick={() => { setViewingProduct(null); setCurrentTab('products'); }}>
-          <img src="/logo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
+          <img 
+            src="/logo.png" 
+            alt="NasFon Logo" 
+            className="h-10 md:h-12 object-contain hover:drop-shadow-sm" 
+            fetchPriority="high"
+            width={160}
+            height={48}
+          />
         </span>
       </div>
-      <button className="p-2 -mr-2 rounded-full hover:bg-gray-200 transition-colors relative" onClick={() => setCurrentTab('admin')}>
+      <button className="p-2 -mr-2 rounded-full hover:bg-gray-200 transition-colors relative" onClick={() => setCurrentTab('admin')} aria-label="Open Admin Settings">
         <Settings size={22} className="text-gray-800" />
       </button>
     </header>
   );
 
   const renderFooter = () => (
-    <footer className="py-8 px-6 text-center text-sm text-gray-500 mt-8 border-t border-gray-200/50">
+    <footer className="py-8 px-6 text-center text-sm text-gray-600 mt-8 border-t border-gray-200/50">
       <div className="flex items-center justify-center gap-2">
         <Globe size={16} /> NasFon | Nigeria
       </div>
@@ -67,7 +76,7 @@ function App() {
 
   if (viewingProduct) {
     return (
-      <>
+      <Suspense fallback={<div className="h-screen flex items-center justify-center bg-[#f7f7f9] animate-pulse">Loading Product...</div>}>
         <ProductDetails 
           product={viewingProduct} 
           onClose={() => { setViewingProduct(null); setIsDirectBuy(false); }} 
@@ -80,7 +89,7 @@ function App() {
           promoSettings={promoSettings}
         />
         <WhatsAppButton />
-      </>
+      </Suspense>
     );
   }
 
@@ -126,39 +135,41 @@ function App() {
       )}
 
       <main className="px-6 pb-20">
-        {currentTab !== 'admin' && promoSettings && <CountdownTimer promoSettings={promoSettings} />}
-        
-        {currentTab === 'admin' && (
-           <AdminPanel 
-             productsList={productsList} 
-             setProductsList={setProductsList}
-             isAdminLoggedIn={isAdminLoggedIn}
-             setIsAdminLoggedIn={setIsAdminLoggedIn}
-             setCurrentTab={setCurrentTab}
-             promoSettings={promoSettings}
-             setPromoSettings={setPromoSettings}
-           />
-        )}
-        
-        {currentTab === 'products' && (
-           <ProductList
-             productsList={productsList}
-             onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
-             onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
-             isLoading={isLoading}
-             promoSettings={promoSettings}
-           />
-        )}
-
-        {currentTab === 'collections' && (
-           <Discover 
-             productsList={productsList}
-             setCurrentTab={setCurrentTab}
-             onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
-             onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
-             promoSettings={promoSettings}
-           />
-        )}
+        <Suspense fallback={<div className="h-40 flex items-center justify-center animate-pulse text-gray-400">Loading...</div>}>
+          {currentTab !== 'admin' && promoSettings && <CountdownTimer promoSettings={promoSettings} />}
+          
+          {currentTab === 'admin' && (
+             <AdminPanel 
+               productsList={productsList} 
+               setProductsList={setProductsList}
+               isAdminLoggedIn={isAdminLoggedIn}
+               setIsAdminLoggedIn={setIsAdminLoggedIn}
+               setCurrentTab={setCurrentTab}
+               promoSettings={promoSettings}
+               setPromoSettings={setPromoSettings}
+             />
+          )}
+          
+          {currentTab === 'products' && (
+             <ProductList
+               productsList={productsList}
+               onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
+               onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
+               isLoading={isLoading}
+               promoSettings={promoSettings}
+             />
+          )}
+  
+          {currentTab === 'collections' && (
+             <Discover 
+               productsList={productsList}
+               setCurrentTab={setCurrentTab}
+               onViewProduct={(product) => { setViewingProduct(product); setIsDirectBuy(false); }}
+               onBuyProduct={(product) => { setViewingProduct(product); setIsDirectBuy(true); }}
+               promoSettings={promoSettings}
+             />
+          )}
+        </Suspense>
       </main>
 
       {currentTab !== 'products' && currentTab !== 'admin' && renderFooter()}

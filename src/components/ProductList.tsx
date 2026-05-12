@@ -1,5 +1,6 @@
 import { ShieldCheck } from 'lucide-react';
 import ProductCard from './ProductCard';
+import ViewportVisible from './ViewportVisible';
 import type { Product, PromoSettings } from '../types';
 
 interface ProductListProps {
@@ -31,15 +32,21 @@ export default function ProductList({ productsList, onViewProduct, onBuyProduct,
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:gap-5">
-          {productsList.map(product => (
-            <ProductCard 
-              key={product.id}
-              product={product}
-              onView={onViewProduct}
-              onBuy={onBuyProduct}
-              promoSettings={promoSettings}
-              variant="grid"
-            />
+          {productsList.map((product, index) => (
+            <ViewportVisible 
+              key={product.id} 
+              initialVisible={index < 4} 
+              placeholderHeight={280}
+            >
+              <ProductCard 
+                product={product}
+                onView={onViewProduct}
+                onBuy={onBuyProduct}
+                promoSettings={promoSettings}
+                variant="grid"
+                priority={index < 2}
+              />
+            </ViewportVisible>
           ))}
         </div>
       )}

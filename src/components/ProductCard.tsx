@@ -9,6 +9,7 @@ interface ProductCardProps {
   onBuy: (product: Product) => void;
   promoSettings?: PromoSettings | null;
   variant?: 'grid' | 'featured';
+  priority?: boolean;
 }
 
 export default function ProductCard({ 
@@ -16,7 +17,8 @@ export default function ProductCard({
   onView, 
   onBuy, 
   promoSettings, 
-  variant = 'grid' 
+  variant = 'grid',
+  priority = false
 }: ProductCardProps) {
   const activePromo = isPromoActive(promoSettings);
   const discountedPrice = getDiscountedPrice(product.price, promoSettings);
@@ -43,6 +45,9 @@ export default function ProductCard({
             alt={product.name}
             className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
             wrapperClassName="w-full h-full"
+            priority={priority}
+            width={800}
+            height={500}
           />
           <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
             <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
@@ -110,6 +115,9 @@ export default function ProductCard({
           alt={product.name} 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
           wrapperClassName="w-full h-full"
+          priority={priority}
+          width={400}
+          height={400}
         />
         {product.badge && (
           <div className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wide z-10

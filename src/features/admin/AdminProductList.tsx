@@ -38,10 +38,10 @@ export const AdminProductList: React.FC<AdminProductListProps> = ({
             <p className="text-sm font-semibold text-[#003b8e]">₦ {product.price}</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => onEdit(product)} className="p-2 text-gray-500 hover:text-blue-600 bg-gray-50 rounded-lg">
+            <button onClick={() => onEdit(product)} className="p-2 text-gray-500 hover:text-blue-600 bg-gray-50 rounded-lg" aria-label={`Edit ${product.name}`}>
               <Edit2 size={16} />
             </button>
-            <button onClick={() => onDelete(product.id)} className="p-2 text-gray-500 hover:text-red-600 bg-gray-50 rounded-lg">
+            <button onClick={() => onDelete(product.id)} className="p-2 text-gray-500 hover:text-red-600 bg-gray-50 rounded-lg" aria-label={`Delete ${product.name}`}>
               <Trash2 size={16} />
             </button>
           </div>

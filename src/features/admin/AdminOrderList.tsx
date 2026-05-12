@@ -41,7 +41,7 @@ export const AdminOrderList: React.FC<AdminOrderListProps> = ({
                 }`}>
                   {order.status}
                 </span>
-                <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
+                <span className="text-[10px] text-gray-600 font-medium flex items-center gap-1">
                   <Clock size={10} />
                   {new Date(order.created_at).toLocaleDateString()}
                 </span>
@@ -50,21 +50,21 @@ export const AdminOrderList: React.FC<AdminOrderListProps> = ({
             </div>
             <div className="text-right">
               <p className="font-bold text-[#003b8e]">₦ {order.total_price.toLocaleString()}</p>
-              <p className="text-[10px] text-gray-400 font-medium">Qty: {order.quantity}</p>
+              <p className="text-[10px] text-gray-600 font-medium">Qty: {order.quantity}</p>
             </div>
           </div>
           
           <div className="bg-gray-50 rounded-2xl p-4 mb-4 text-xs space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-400">Phone:</span>
+              <span className="text-gray-600">Phone:</span>
               <a href={`tel:${order.customer_phone}`} className="font-bold text-gray-900 underline">{order.customer_phone}</a>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Address:</span>
+              <span className="text-gray-600">Address:</span>
               <span className="font-bold text-gray-900 text-right max-w-[150px]">{order.customer_address}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Payment:</span>
+              <span className="text-gray-600">Payment:</span>
               <span className="font-bold text-[#003b8e]">{order.payment_method.replace(/_/g, ' ')}</span>
             </div>
           </div>
@@ -82,6 +82,7 @@ export const AdminOrderList: React.FC<AdminOrderListProps> = ({
             <button 
               onClick={() => onDelete(order.id)}
               className="p-2.5 text-gray-400 hover:text-red-600 bg-gray-50 rounded-xl transition-all"
+              aria-label="Delete Order"
             >
               <Trash2 size={16} />
             </button>

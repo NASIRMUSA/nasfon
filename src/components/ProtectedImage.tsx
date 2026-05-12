@@ -1,10 +1,14 @@
 import React from 'react';
+import { optimizeImage } from '../utils/productUtils';
 
 interface ProtectedImageProps {
   src: string;
   alt: string;
   className?: string;
   wrapperClassName?: string;
+  priority?: boolean;
+  width?: number;
+  height?: number;
 }
 
 /**
@@ -15,7 +19,17 @@ interface ProtectedImageProps {
  * 3. Applies a transparent overlay to prevent direct image interaction
  * 4. Disables selection
  */
-export default function ProtectedImage({ src, alt, className, wrapperClassName }: ProtectedImageProps) {
+export default function ProtectedImage({ 
+  src, 
+  alt, 
+  className, 
+  wrapperClassName, 
+  priority = false,
+  width,
+  height
+}: ProtectedImageProps) {
+  const optimizedSrc = optimizeImage(src, width || (priority ? 1200 : 800));
+  
   const preventDefault = (e: React.MouseEvent | React.DragEvent) => {
     e.preventDefault();
     return false;
@@ -25,13 +39,16 @@ export default function ProtectedImage({ src, alt, className, wrapperClassName }
     <div className={`relative overflow-hidden select-none protected-img-container ${wrapperClassName || ''}`}>
       {/* The actual image with deterrents */}
       <img 
-        src={src} 
+        src={optimizedSrc} 
         alt={alt} 
         className={`block pointer-events-none select-none ${className || ''}`}
         onContextMenu={preventDefault}
         onDragStart={preventDefault}
         draggable={false}
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        width={width}
+        height={height}
       />
       
       {/* 

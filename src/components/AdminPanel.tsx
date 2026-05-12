@@ -191,6 +191,7 @@ export default function AdminPanel({
   const sendPushNotification = async (title: string, message: string) => {
     setIsSending(true);
     try {
+      console.log("📤 [Push] Attempting to send...");
       const { data, error } = await supabase.functions.invoke('send-push', { 
         body: { 
           title, 
@@ -208,16 +209,24 @@ export default function AdminPanel({
           const body = await (error as any).context?.json();
           if (body?.error) msg = body.error;
         } catch (e) {}
-        console.warn(`⚠️ [Push] Potential false alarm error: ${msg}`, error);
+        console.error(`❌ [Push Error]: ${msg}`, error);
+        alert(`Failed to send notification: ${msg}`);
+        return;
       }
       
       console.log("✅ [Push Result]:", data);
-      alert('Notification sent! Check your phone.');
+      
+      if (data?.sent === 0 && data?.failed === 0) {
+        alert('Success (but 0 devices are registered). Ask users to open the app first.');
+      } else {
+        alert(`Notification sent successfully! (Sent: ${data?.sent || 0}, Failed: ${data?.failed || 0})`);
+      }
+      
       setShowNotificationForm(false);
       setNotificationPayload({ title: '', message: '' });
     } catch (err: any) {
-      console.error("❌ [Push Failed]:", err);
-      alert('Sent (check logs if no notification arrives)');
+      console.error("💥 [Push Exception]:", err);
+      alert(`Critical error sending notification: ${err.message || 'Unknown error'}`);
     } finally {
       setIsSending(false);
     }

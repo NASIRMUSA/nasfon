@@ -94,7 +94,7 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
       <div className="min-h-screen max-w-md mx-auto bg-white flex flex-col pt-12 pb-8 relative shadow-2xl overflow-hidden">
         <header className="flex items-center justify-between px-6 py-5 sticky top-0 bg-white z-10">
           <div className="font-display font-bold text-xl tracking-tight text-[#003b8e] absolute left-1/2 -translate-x-1/2">
-            <img src="/logo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
+            <img src="/logo.png" alt="NasFon Logo" className="h-10 md:h-12 object-contain hover:drop-shadow-sm" width={160} height={48} />
           </div>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center text-gray-800 mt-[10vh]">
@@ -163,11 +163,11 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
         </script>
       </Helmet>
       <header className="flex items-center justify-between px-6 py-5 sticky top-0 bg-[#f7f7f9]/80 backdrop-blur-md z-10">
-        <button onClick={onClose} className="p-2 -ml-2 rounded-full hover:bg-gray-200 transition-colors">
+        <button onClick={onClose} className="p-2 -ml-2 rounded-full hover:bg-gray-200 transition-colors" aria-label="Go Back">
           <ArrowLeft size={24} className="text-gray-800" />
         </button>
           <div className="font-display font-bold text-xl tracking-tight text-[#003b8e] absolute left-1/2 -translate-x-1/2">
-            <img src="/logo.png" alt="NasFon Logo" className="h-8 md:h-10 object-contain scale-125 hover:drop-shadow-sm transition-all" />
+            <img src="/logo.png" alt="NasFon Logo" className="h-10 md:h-12 object-contain hover:drop-shadow-sm" width={160} height={48} />
           </div>
       </header>
       
@@ -179,6 +179,8 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
               alt={product.name} 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
               wrapperClassName="w-full h-full"
+              width={800}
+              height={1000}
             />
             <div className="absolute top-4 left-4 flex flex-col gap-2">
               {product.badge && (
@@ -221,6 +223,7 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
                 <button 
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="w-10 h-10 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  aria-label="Decrease quantity"
                 >
                   <Minus size={18} />
                 </button>
@@ -228,6 +231,7 @@ export default function ProductDetails({ product, onClose, onSuccessReturn, init
                 <button 
                   onClick={() => setQuantity(quantity + 1)}
                   className="w-10 h-10 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  aria-label="Increase quantity"
                 >
                   <Plus size={18} />
                 </button>
